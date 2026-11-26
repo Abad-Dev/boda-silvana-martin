@@ -1,0 +1,690 @@
+---
+// Modal "Confirmar asistencia": envía la respuesta a la lista de invitados de GUEST.
+// Contrato: POST {baseUrl}/api/v1/rsvp/{apiKey} → { ok: true } | { error }.
+// Se abre con cualquier enlace a #confirmar.
+import '@fontsource/cormorant-garamond/400.css';
+import '@fontsource/cormorant-garamond/500.css';
+import '@fontsource/cormorant-garamond/600.css';
+import '@fontsource/cormorant-garamond/400-italic.css';
+import { GUEST_RSVP } from '../config';
+
+const endpoint = `${GUEST_RSVP.baseUrl.replace(/\/$/, '')}/api/v1/rsvp/${GUEST_RSVP.apiKey}`;
+const MAX_ACOMPANANTES = 5;
+---
+
+<dialog id="rsvp" class="rsvp" aria-labelledby="rsvp-titulo" data-endpoint={endpoint} data-max={MAX_ACOMPANANTES}>
+  <button type="button" class="cerrar" data-cerrar aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+  </button>
+
+  <div class="paso" data-paso="formulario">
+    <header class="cabecera">
+      <p class="antetitulo">Silvana &amp; Martín</p>
+      <h2 id="rsvp-titulo">¿Nos acompañas?</h2>
+      <p class="sub">Sábado 24 de abril de 2027 · Piura</p>
+      <span class="adorno" aria-hidden="true"><span></span><i></i><span></span></span>
+    </header>
+
+    <form novalidate>
+      <fieldset class="asiste">
+        <legend class="visual-oculto">¿Asistirás?</legend>
+        <label class="opcion">
+          <input type="radio" name="asiste" value="si" checked />
+          <span>Sí, asistiré</span>
+        </label>
+        <label class="opcion">
+          <input type="radio" name="asiste" value="no" />
+          <span>No podré asistir</span>
+        </label>
+      </fieldset>
+
+      <div class="fila">
+        <label class="campo">
+          <span>Nombre</span>
+          <input name="nombre" autocomplete="given-name" required maxlength="100" />
+        </label>
+        <label class="campo">
+          <span>Apellidos</span>
+          <input name="apellidos" autocomplete="family-name" required maxlength="100" />
+        </label>
+      </div>
+      <label class="campo">
+        <span>Teléfono</span>
+        <input name="telefono" type="tel" inputmode="tel" autocomplete="tel" maxlength="40" />
+      </label>
+
+      <section class="acompanantes" data-solo-asiste>
+        <div class="acomp-cabecera">
+          <h3>Acompañantes</h3>
+          <span class="contador" data-contador></span>
+        </div>
+        <ol data-lista></ol>
+        <button type="button" class="agregar" data-agregar>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          Agregar acompañante
+        </button>
+      </section>
+
+      <label class="campo">
+        <span>Mensaje para los novios <em>(opcional)</em></span>
+        <textarea name="mensaje" rows="3" maxlength="1000"></textarea>
+      </label>
+
+      <!-- campo trampa: oculto para personas -->
+      <input class="trampa" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <p class="error" role="alert" data-error hidden></p>
+
+      <button type="submit" class="enviar">
+        <span class="texto">Confirmar asistencia</span>
+        <span class="girando" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+
+  <div class="paso gracias" data-paso="gracias" hidden>
+    <span class="sello" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+    </span>
+    <h2 data-gracias-titulo>¡Gracias por confirmar!</h2>
+    <p data-gracias-texto>Tu respuesta llegó a los novios. Nos vemos el 24 de abril.</p>
+    <p class="aviso-prueba" data-prueba hidden>Modo prueba: GUEST validó la respuesta pero no la guardó.</p>
+    <button type="button" class="enviar" data-cerrar>Volver a la invitación</button>
+  </div>
+</dialog>
+
+<template id="rsvp-acompanante">
+  <li class="acompanante">
+    <div class="acomp-titulo">
+      <span data-n></span>
+      <button type="button" class="quitar" data-quitar aria-label="Quitar acompañante">Quitar</button>
+    </div>
+    <div class="fila">
+      <label class="campo">
+        <span>Nombre</span>
+        <input data-k="nombre" required maxlength="100" />
+      </label>
+      <label class="campo">
+        <span>Apellidos</span>
+        <input data-k="apellidos" required maxlength="100" />
+      </label>
+    </div>
+    <label class="campo">
+      <span>Teléfono</span>
+      <input data-k="telefono" type="tel" inputmode="tel" maxlength="40" />
+    </label>
+  </li>
+</template>
+
+<script>
+  const dialog = document.getElementById('rsvp') as HTMLDialogElement;
+  const form = dialog.querySelector('form')!;
+  const lista = dialog.querySelector<HTMLOListElement>('[data-lista]')!;
+  const plantilla = document.getElementById('rsvp-acompanante') as HTMLTemplateElement;
+  const btnAgregar = dialog.querySelector<HTMLButtonElement>('[data-agregar]')!;
+  const contador = dialog.querySelector<HTMLElement>('[data-contador]')!;
+  const error = dialog.querySelector<HTMLElement>('[data-error]')!;
+  const enviar = form.querySelector<HTMLButtonElement>('.enviar')!;
+  const pasoForm = dialog.querySelector<HTMLElement>('[data-paso="formulario"]')!;
+  const pasoGracias = dialog.querySelector<HTMLElement>('[data-paso="gracias"]')!;
+  const MAX = Number(dialog.dataset.max);
+  let startedAt = Date.now();
+
+  const asiste = () => (form.elements.namedItem('asiste') as RadioNodeList).value === 'si';
+
+  function renumerar() {
+    const items = [...lista.children] as HTMLElement[];
+    items.forEach((li, i) => (li.querySelector('[data-n]')!.textContent = `Acompañante ${i + 1}`));
+    btnAgregar.hidden = items.length >= MAX;
+    contador.textContent = items.length ? `${items.length} de ${MAX}` : `Hasta ${MAX}`;
+  }
+
+  function agregar() {
+    if (lista.children.length >= MAX) return;
+    const li = plantilla.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    li.querySelector('[data-quitar]')!.addEventListener('click', () => {
+      li.remove();
+      renumerar();
+    });
+    lista.append(li);
+    renumerar();
+    li.querySelector('input')!.focus();
+  }
+
+  function actualizarAsistencia() {
+    const si = asiste();
+    dialog.querySelectorAll<HTMLElement>('[data-solo-asiste]').forEach((el) => (el.hidden = !si));
+    enviar.querySelector('.texto')!.textContent = si ? 'Confirmar asistencia' : 'Enviar respuesta';
+  }
+
+  function mostrarError(msg: string) {
+    error.textContent = msg;
+    error.hidden = false;
+    error.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  function abrir() {
+    if (!pasoGracias.hidden) reiniciar();
+    startedAt = Date.now();
+    dialog.showModal();
+    document.documentElement.classList.add('rsvp-abierto');
+  }
+
+  function reiniciar() {
+    form.reset();
+    lista.replaceChildren();
+    renumerar();
+    actualizarAsistencia();
+    error.hidden = true;
+    pasoGracias.hidden = true;
+    pasoForm.hidden = false;
+  }
+
+  // Abrir con cualquier enlace a #confirmar
+  document.addEventListener('click', (e) => {
+    const a = (e.target as Element).closest?.('a[href="#confirmar"]');
+    if (!a) return;
+    e.preventDefault();
+    abrir();
+  });
+  if (location.hash === '#confirmar') addEventListener('load', abrir);
+
+  dialog.addEventListener('close', () => document.documentElement.classList.remove('rsvp-abierto'));
+  dialog.querySelectorAll('[data-cerrar]').forEach((b) => b.addEventListener('click', () => dialog.close()));
+  // Clic fuera de la tarjeta
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+
+  btnAgregar.addEventListener('click', agregar);
+  form.querySelectorAll('input[name="asiste"]').forEach((r) => r.addEventListener('change', actualizarAsistencia));
+  form.addEventListener('input', () => (error.hidden = true));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    error.hidden = true;
+
+    const f = new FormData(form);
+    const texto = (k: string) => String(f.get(k) ?? '').trim();
+    const si = asiste();
+
+    if (!texto('nombre') || !texto('apellidos')) return mostrarError('Escribe tu nombre y apellidos.');
+
+    const acompanantes = si
+      ? [...lista.children].map((li) => {
+          const v = (k: string) => (li.querySelector(`[data-k="${k}"]`) as HTMLInputElement).value.trim();
+          return { nombre: v('nombre'), apellidos: v('apellidos'), telefono: v('telefono') };
+        })
+      : [];
+    const incompleto = acompanantes.findIndex((a) => !a.nombre || !a.apellidos);
+    if (incompleto !== -1) return mostrarError(`Completa el nombre y apellidos del acompañante ${incompleto + 1}.`);
+
+    enviar.disabled = true;
+    enviar.classList.add('cargando');
+    try {
+      const res = await fetch(dialog.dataset.endpoint!, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: texto('nombre'),
+          apellidos: texto('apellidos'),
+          telefono: texto('telefono'),
+          confirmo_asistencia: si,
+          mensaje: texto('mensaje'),
+          acompanantes,
+          website: String(f.get('website') ?? ''),
+          startedAt,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        return mostrarError(data.error ?? 'No pudimos registrar tu respuesta. Inténtalo nuevamente.');
+      }
+
+      dialog.querySelector('[data-gracias-titulo]')!.textContent = si ? '¡Gracias por confirmar!' : '¡Gracias por avisarnos!';
+      dialog.querySelector('[data-gracias-texto]')!.textContent = si
+        ? 'Tu respuesta llegó a los novios. Nos vemos el 24 de abril.'
+        : 'Te extrañaremos. Gracias por acompañarnos con tu cariño.';
+      (dialog.querySelector('[data-prueba]') as HTMLElement).hidden = !data.test;
+      pasoForm.hidden = true;
+      pasoGracias.hidden = false;
+      dialog.scrollTop = 0;
+    } catch {
+      mostrarError('No pudimos enviar tu respuesta. Revisa tu conexión e inténtalo nuevamente.');
+    } finally {
+      enviar.disabled = false;
+      enviar.classList.remove('cargando');
+    }
+  });
+
+  renumerar();
+  actualizarAsistencia();
+</script>
+
+<style>
+  .rsvp {
+    --tinta: #5f564b;
+    --suave: #8b8174;
+    --linea: #dcd2c0;
+    --papel: #fbf8f2;
+    width: min(440px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    margin: auto;
+    padding: 0;
+    border: 1px solid #e4dccd;
+    border-radius: 18px;
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.4;
+    box-shadow: 0 30px 80px -20px rgb(60 50 35 / 0.45);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .rsvp[open] {
+    animation: aparecer 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .rsvp::backdrop {
+    background: rgb(70 62 50 / 0.45);
+    backdrop-filter: blur(3px);
+  }
+  :global(html.rsvp-abierto) {
+    overflow: hidden;
+  }
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rsvp[open] {
+      animation: none;
+    }
+  }
+
+  .paso {
+    padding: 34px 26px 26px;
+  }
+  .cerrar {
+    position: sticky;
+    top: 10px;
+    float: right;
+    margin: 10px 10px -44px 0;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(251 248 242 / 0.9);
+    color: var(--suave);
+    cursor: pointer;
+    z-index: 2;
+  }
+  .cerrar:hover {
+    color: var(--tinta);
+    background: #efe8db;
+  }
+  .cerrar svg,
+  .agregar svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .cabecera {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .antetitulo {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--dorado);
+  }
+  h2 {
+    margin: 4px 0 2px;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 34px;
+    line-height: 1.1;
+    color: var(--tinta);
+  }
+  .sub {
+    margin: 0;
+    color: var(--suave);
+    font-size: 16px;
+  }
+  .adorno {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .adorno span {
+    width: 56px;
+    border-top: 1px solid var(--dorado);
+  }
+  .adorno i {
+    width: 5px;
+    height: 5px;
+    background: var(--salvia);
+    transform: rotate(45deg);
+  }
+
+  form {
+    display: grid;
+    gap: 14px;
+  }
+  fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .asiste {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 4px;
+    border-radius: 999px;
+    background: #efe8db;
+  }
+  .opcion {
+    position: relative;
+    cursor: pointer;
+  }
+  .opcion input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .opcion span {
+    display: block;
+    padding: 9px 6px;
+    border-radius: 999px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--suave);
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+  }
+  .opcion input:checked + span {
+    background: var(--salvia);
+    color: #fff;
+    box-shadow: 0 4px 12px -4px rgb(110 125 105 / 0.7);
+  }
+  .opcion input:focus-visible + span {
+    outline: 2px solid var(--dorado);
+    outline-offset: 2px;
+  }
+
+  .fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 380px) {
+    .fila {
+      grid-template-columns: 1fr;
+    }
+  }
+  .campo {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+  .campo > span {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--suave);
+  }
+  .campo em {
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.8;
+  }
+  input:not([type='radio']),
+  textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--linea);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--tinta);
+    font: inherit;
+    font-size: 17px;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 76px;
+  }
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--salvia);
+    box-shadow: 0 0 0 3px rgb(146 159 142 / 0.22);
+  }
+
+  .acompanantes {
+    display: grid;
+    gap: 10px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--linea);
+  }
+  .acompanantes[hidden] {
+    display: none;
+  }
+  .acomp-cabecera {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  h3 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 19px;
+  }
+  .contador {
+    font-size: 14px;
+    color: var(--suave);
+  }
+  ol {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  ol:empty {
+    display: none;
+  }
+  .acompanante {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #ebe3d4;
+    border-radius: 12px;
+    background: #f6f1e7;
+  }
+  .acomp-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-style: italic;
+    font-size: 16px;
+  }
+  .quitar {
+    border: 0;
+    background: none;
+    padding: 2px 4px;
+    color: #a0705f;
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .quitar:hover {
+    text-decoration: underline;
+  }
+  .agregar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px;
+    border: 1px dashed var(--salvia);
+    border-radius: 999px;
+    background: transparent;
+    color: #6f7d6b;
+    font: inherit;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .agregar:hover {
+    background: rgb(146 159 142 / 0.1);
+  }
+  .agregar[hidden] {
+    display: none;
+  }
+
+  .trampa {
+    position: absolute !important;
+    left: -9999px;
+    width: 1px !important;
+    height: 1px;
+    opacity: 0;
+  }
+  .visual-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .error {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f7e6df;
+    color: #8c4a3a;
+    font-size: 16px;
+  }
+  .error[hidden] {
+    display: none;
+  }
+
+  .enviar {
+    position: relative;
+    width: 100%;
+    margin-top: 4px;
+    padding: 13px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--salvia);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -12px rgb(100 115 95 / 0.9);
+    transition:
+      background-color 0.2s,
+      transform 0.1s;
+  }
+  .enviar:hover {
+    background: #849282;
+  }
+  .enviar:active {
+    transform: scale(0.99);
+  }
+  .enviar:disabled {
+    cursor: progress;
+  }
+  .enviar:focus-visible {
+    outline: 2px solid var(--dorado);
+    outline-offset: 3px;
+  }
+  .girando {
+    display: none;
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgb(255 255 255 / 0.45);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+  }
+  .cargando .texto {
+    visibility: hidden;
+  }
+  .cargando .girando {
+    display: block;
+  }
+  @keyframes girar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .gracias {
+    text-align: center;
+    padding-top: 46px;
+  }
+  .gracias[hidden],
+  .paso[hidden] {
+    display: none;
+  }
+  .gracias p {
+    margin: 8px 0 22px;
+    color: var(--suave);
+  }
+  .sello {
+    display: inline-grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 10px;
+    border-radius: 50%;
+    background: var(--salvia);
+    color: #fff;
+    box-shadow: 0 0 0 6px rgb(146 159 142 / 0.2);
+  }
+  .sello svg {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .aviso-prueba {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #f3ecd9;
+    color: #8a7340 !important;
+  }
+</style>

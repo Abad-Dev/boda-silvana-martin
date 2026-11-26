@@ -5,6 +5,7 @@ import { LINKS } from '../config';
 
 import SobreAnimado from '../components/SobreAnimado.astro';
 import CuentaRegresiva from '../components/CuentaRegresiva.astro';
+import RsvpModal from '../components/RsvpModal.astro';
 import TituloManuscrito from '../components/TituloManuscrito.astro';
 import { Image } from 'astro:assets';
 import portada from '../assets/secciones/02-portada-limpia.png';
@@ -126,7 +127,7 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
         src={confirmacion}
         alt="¿Nos acompañas? Confirma tu asistencia. Nos vemos dentro de… Solo adultos: celebración reservada para adultos."
         hotspots={[
-          { href: LINKS.confirmarAsistencia, label: 'Confirmar asistencia', x: 28.1, y: 246.1, w: 392.9, h: 51.4, external: LINKS.confirmarAsistencia.startsWith('http') },
+          { href: LINKS.confirmarAsistencia, label: 'Confirmar asistencia', x: 28.1, y: 246.1, w: 392.9, h: 51.4 },
         ]}
       >
         <TituloManuscrito src={tNosAcompanas} x={28} y={58} base={confirmacion} grupo="nos-acompanas" />
@@ -148,6 +149,7 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
       </footer>
       </div>
     </main>
+    <RsvpModal />
   </body>
 </html>
 
