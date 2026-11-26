@@ -32,6 +32,13 @@ import tParaCelebrar from '../assets/titulos/para-celebrar.png';
 
 const title = 'Silvana y Martín | Invitación';
 const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24 de abril de 2027, Piura, Perú.';
+
+// Vista previa al compartir el enlace (WhatsApp, Facebook, etc.): sin fotos de los novios
+const ogTitle = 'Tienes una invitación';
+const ogDescription = 'Silvana y Martín';
+const absoluta = (ruta: string) => (Astro.site ? new URL(ruta, Astro.site).href : ruta);
+const ogImage = absoluta('/og-invitacion.jpg');
+const urlCanonica = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 ---
 
 <html lang="es">
@@ -39,11 +46,28 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#F4EFE5" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    {urlCanonica && <link rel="canonical" href={urlCanonica} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:site_name" content="Silvana y Martín" />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    {urlCanonica && <meta property="og:url" content={urlCanonica} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Sello de cera con las iniciales SM junto a los nombres Silvana y Martín" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
     <main class="invitacion">
