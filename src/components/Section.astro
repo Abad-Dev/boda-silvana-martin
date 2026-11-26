@@ -102,27 +102,28 @@ const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(4)}%`;
     background-image: var(--img);
     background-repeat: no-repeat;
     transform-origin: center;
-    animation: latido 2.4s ease-in-out infinite;
+    animation: latido-boton 1.6s ease-in-out infinite;
     will-change: transform;
   }
   .hotspot:hover .latido,
   .hotspot:focus-visible .latido {
     filter: brightness(1.06);
   }
-  @keyframes latido {
+  /* Nombre propio: SobreAnimado ya define un @keyframes "latido" (global) para el sello */
+  @keyframes latido-boton {
     0%,
-    40%,
+    45%,
     100% {
       transform: scale(1);
     }
-    10% {
-      transform: scale(1.045);
+    12% {
+      transform: scale(1.07);
     }
-    20% {
-      transform: scale(1.01);
+    22% {
+      transform: scale(1.02);
     }
-    28% {
-      transform: scale(1.035);
+    32% {
+      transform: scale(1.055);
     }
   }
   @media (prefers-reduced-motion: reduce) {
