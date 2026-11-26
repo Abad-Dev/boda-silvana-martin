@@ -1,0 +1,340 @@
+---
+import { getImage } from 'astro:assets';
+import fondo from '../assets/01-sobre.png';
+import tarjeta from '../assets/02-portada.png';
+import sello from '../assets/sello-marfil.png';
+
+const fondoImg = await getImage({ src: fondo, format: 'webp', quality: 90 });
+const tarjetaImg = await getImage({ src: tarjeta, width: 864, format: 'webp', quality: 90 });
+const selloImg = await getImage({ src: sello, format: 'webp', quality: 90 });
+
+/*
+ * Escena de 478 × 829 (tamaño de 01-sobre.png). El sobre verde se dibuja en SVG
+ * exactamente encima del sobre crema original: x 40–438, y 290–592.
+ */
+const W = 478;
+const H = 829;
+const px = (x: number) => `${((x / W) * 100).toFixed(3)}%`;
+const py = (y: number) => `${((y / H) * 100).toFixed(3)}%`;
+
+// Tarjeta: la portada (02-portada.png, 864 × 967), la misma imagen que queda a pantalla completa
+const cardW = 350;
+const cardH = (cardW * 967) / 864;
+const cardX = 239 - cardW / 2;
+const cardY = 305; // empieza escondida dentro del sobre
+
+// Sello marfil centrado en el vértice de la solapa
+const selloD = 112;
+const selloX = 239 - selloD / 2;
+const selloY = 478 - selloD / 2;
+
+const SOLAPA = 'M38 288 L440 288 L264 474 Q239 500 214 474 Z';
+const BOLSILLO = 'M38 288 L239 452 L440 288 L440 595 L38 595 Z';
+---
+
+<div
+  id="sobre-animado"
+  class="sobre"
+  role="button"
+  tabindex="0"
+  aria-label="Una invitación para ti. Toca para abrir el sobre."
+  style={`--origen:${py(288)};--tope:${py(595)}`}
+>
+  <div class="escena">
+    <img class="capa" src={fondoImg.src} alt="" />
+
+    <svg class="capa" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <defs>
+        <filter id="papel" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="ruido" />
+          <feColorMatrix in="ruido" type="saturate" values="0" result="gris" />
+          <feComponentTransfer in="gris" result="suave">
+            <feFuncA type="linear" slope="0.10" />
+          </feComponentTransfer>
+          <feComposite in="suave" in2="SourceGraphic" operator="in" result="grano" />
+          <feBlend in="SourceGraphic" in2="grano" mode="multiply" />
+        </filter>
+        <linearGradient id="interior" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5f6855" />
+          <stop offset="0.6" stop-color="#737c68" />
+          <stop offset="1" stop-color="#7d8672" />
+        </linearGradient>
+      </defs>
+      <!-- Cuerpo trasero del sobre (lo que se ve por dentro al abrirlo) -->
+      <rect x="38" y="288" width="402" height="307" rx="3" fill="url(#interior)" filter="url(#papel)" class="sombra" />
+    </svg>
+
+    <div class="capa tarjeta-clip">
+      <div
+        class="tarjeta"
+        style={`left:${px(cardX)};top:${py(cardY)};width:${px(cardW)};height:${py(cardH)};background-image:url(${tarjetaImg.src})`}
+      >
+      </div>
+    </div>
+
+    <svg class="capa bolsillo" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+      <defs>
+        <clipPath id="clip-bolsillo"><path d={BOLSILLO} /></clipPath>
+        <linearGradient id="lateral-i" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#848e78" />
+          <stop offset="1" stop-color="#8f9983" />
+        </linearGradient>
+        <linearGradient id="lateral-d" x1="1" y1="0" x2="0" y2="0">
+          <stop offset="0" stop-color="#7f8973" />
+          <stop offset="1" stop-color="#8c9680" />
+        </linearGradient>
+        <linearGradient id="inferior" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#8b957f" />
+          <stop offset="1" stop-color="#97a18b" />
+        </linearGradient>
+      </defs>
+      <g clip-path="url(#clip-bolsillo)" filter="url(#papel)">
+        <path d="M38 288 L246 452 L38 595 Z" fill="url(#lateral-i)" />
+        <path d="M440 288 L232 452 L440 595 Z" fill="url(#lateral-d)" />
+        <path d="M38 595 L226 438 Q239 428 252 438 L440 595 Z" fill="url(#inferior)" />
+        <path
+          d="M38 595 L226 438 Q239 428 252 438 L440 595"
+          fill="none"
+          stroke="#f3efe2"
+          stroke-opacity="0.35"
+          stroke-width="1"
+        />
+      </g>
+    </svg>
+
+    <div class="capa solapa">
+      <svg class="cara" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <defs>
+          <linearGradient id="solapa-cara" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#9aa48e" />
+            <stop offset="1" stop-color="#8c967f" />
+          </linearGradient>
+        </defs>
+        <path d={SOLAPA} fill="url(#solapa-cara)" filter="url(#papel)" />
+        <path d="M38 288 L214 474 Q239 500 264 474 L440 288" fill="none" stroke="#f3efe2" stroke-opacity="0.3" />
+      </svg>
+      <svg class="dorso" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <path d={SOLAPA} fill="#77806c" filter="url(#papel)" />
+      </svg>
+    </div>
+
+    <img
+      class="sello"
+      src={selloImg.src}
+      alt=""
+      style={`left:${px(selloX)};top:${py(selloY)};width:${px(selloD)}`}
+    />
+  </div>
+</div>
+
+<script>
+  const el = document.getElementById('sobre-animado');
+  if (el) {
+    document.documentElement.classList.add('sobre-bloqueado');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let abierto = false;
+
+    window.scrollTo(0, 0);
+
+    const cerrarOverlay = () => {
+      el.classList.add('fuera');
+      document.documentElement.classList.remove('sobre-bloqueado');
+      setTimeout(() => el.remove(), 800);
+    };
+
+    // La tarjeta sale del sobre y crece hasta ocupar exactamente la portada de la página
+    const expandirTarjeta = () => {
+      const card = el.querySelector<HTMLElement>('.tarjeta');
+      const destino = document.getElementById('portada-img');
+      if (!card || !destino) return cerrarOverlay();
+      const r = card.getBoundingClientRect();
+      const d = destino.getBoundingClientRect();
+      el.appendChild(card); // fuera de la escena: sin recortes ni perspectiva
+      Object.assign(card.style, {
+        position: 'fixed',
+        left: `${r.left}px`,
+        top: `${r.top}px`,
+        width: `${r.width}px`,
+        height: `${r.height}px`,
+        transform: 'none',
+        transition: 'none',
+        zIndex: '10',
+      });
+      card.getBoundingClientRect(); // fuerza el estado inicial
+      card.classList.add('expandiendo');
+      Object.assign(card.style, {
+        transition: '',
+        left: `${d.left}px`,
+        top: `${d.top}px`,
+        width: `${d.width}px`,
+        height: `${d.height}px`,
+      });
+      el.classList.add('expandida'); // el sobre y el fondo se funden con la portada
+      setTimeout(cerrarOverlay, 1150);
+    };
+
+    const abrir = () => {
+      if (abierto) return;
+      abierto = true;
+      if (reduce) return cerrarOverlay();
+      el.classList.add('sello-fuera'); // el sello se levanta
+      setTimeout(() => el.classList.add('abriendo'), 350); // la solapa gira
+      setTimeout(() => el.classList.add('solapa-atras'), 800); // pasa detrás de la tarjeta
+      setTimeout(() => el.classList.add('tarjeta-sale'), 1200); // la tarjeta sube
+      setTimeout(expandirTarjeta, 2400); // la tarjeta llena la pantalla y se carga el resto
+    };
+
+    el.addEventListener('click', abrir);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        abrir();
+      }
+    });
+  }
+</script>
+
+<style>
+  :global(html.sobre-bloqueado),
+  :global(html.sobre-bloqueado body) {
+    overflow: hidden;
+  }
+
+  .sobre {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: #f4e8da;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      opacity 0.8s ease,
+      visibility 0.8s;
+  }
+  .sobre:focus-visible {
+    outline: none;
+  }
+  .sobre.fuera {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .escena {
+    position: relative;
+    width: min(100vw, 480px, calc(100dvh * 478 / 829));
+    aspect-ratio: 478 / 829;
+    perspective: 1400px;
+  }
+  .capa,
+  .solapa > svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .sombra {
+    filter: drop-shadow(0 4px 6px rgb(70 60 40 / 0.25));
+  }
+
+  /* La tarjeta solo puede verse por encima del borde inferior del sobre */
+  .tarjeta-clip {
+    z-index: 2;
+    clip-path: inset(-100% 0 calc(100% - var(--tope)) 0);
+  }
+  .tarjeta {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-color: #efe6d9;
+    border-radius: 2px;
+    box-shadow: 0 6px 18px rgb(40 50 30 / 0.25);
+    transition: transform 1.3s cubic-bezier(0.22, 0.8, 0.25, 1);
+  }
+  .tarjeta-sale .tarjeta {
+    transform: translateY(-62%);
+  }
+  .tarjeta.expandiendo {
+    box-shadow: 0 0 0 rgb(40 50 30 / 0);
+    transition:
+      left 1.1s cubic-bezier(0.65, 0, 0.25, 1),
+      top 1.1s cubic-bezier(0.65, 0, 0.25, 1),
+      width 1.1s cubic-bezier(0.65, 0, 0.25, 1),
+      height 1.1s cubic-bezier(0.65, 0, 0.25, 1),
+      box-shadow 1.1s ease;
+  }
+  .escena {
+    transition: opacity 0.7s ease;
+  }
+  .sobre.expandida {
+    background-color: #efe6d9;
+    transition:
+      background-color 1s ease,
+      opacity 0.35s ease,
+      visibility 0.35s;
+  }
+  .expandida .escena {
+    opacity: 0;
+  }
+
+  .bolsillo {
+    z-index: 3;
+  }
+
+  .solapa {
+    z-index: 4;
+    transform-origin: 50% var(--origen);
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 3px 4px rgb(40 50 30 / 0.22));
+    transition: transform 0.9s cubic-bezier(0.45, 0.05, 0.3, 1);
+  }
+  .solapa > svg {
+    backface-visibility: hidden;
+  }
+  .solapa .dorso {
+    transform: rotateY(180deg);
+  }
+  .abriendo .solapa {
+    transform: rotateX(180deg);
+  }
+  .solapa-atras .solapa {
+    z-index: 1;
+  }
+
+  .sello {
+    position: absolute;
+    z-index: 5;
+    height: auto;
+    filter: drop-shadow(0 3px 4px rgb(40 40 20 / 0.35));
+    transition:
+      transform 0.45s ease,
+      opacity 0.45s ease;
+  }
+  .sello-fuera .sello {
+    transform: scale(1.18) translateY(-6%);
+    opacity: 0;
+  }
+
+  /* Pequeña invitación a tocar */
+  @keyframes latido {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.012);
+    }
+  }
+  .sobre:not(.abriendo) .escena {
+    animation: latido 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sobre:not(.abriendo) .escena {
+      animation: none;
+    }
+  }
+</style>

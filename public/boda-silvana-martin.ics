@@ -1,0 +1,24 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Silvana y Martin//Invitacion//ES
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:boda-silvana-martin-20270424@invitacion
+DTSTAMP:20261125T000000Z
+DTSTART;TZID=America/Lima:20270424T153000
+DTEND;TZID=America/Lima:20270425T040000
+SUMMARY:Boda de Silvana y Martín
+LOCATION:Capilla Asilo de Ancianos\, Av. Jorge Chávez 350\, Piura
+DESCRIPTION:Ceremonia religiosa 3:30 p. m. (Capilla Asilo de Ancianos\, Av. Jorge Chávez 350\, Piura).\nCeremonia civil 6:30 p. m. (Asociación Caballos de Paso\, Av. Los Ejidos km 5\, La Mariposa\, Piura).
+END:VEVENT
+BEGIN:VTIMEZONE
+TZID:America/Lima
+BEGIN:STANDARD
+DTSTART:19700101T000000
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0500
+TZNAME:-05
+END:STANDARD
+END:VTIMEZONE
+END:VCALENDAR

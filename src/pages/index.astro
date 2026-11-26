@@ -1,0 +1,292 @@
+---
+import '@fontsource/cormorant-garamond/300.css';
+import Section from '../components/Section.astro';
+import { LINKS } from '../config';
+
+import SobreAnimado from '../components/SobreAnimado.astro';
+import { Image } from 'astro:assets';
+import portada from '../assets/02-portada.png';
+import fechaFoto from '../assets/03-fecha-foto.png';
+import nuestroSi from '../assets/04-nuestro-si.png';
+import granDia from '../assets/05-gran-dia.png';
+import asiCelebraremos from '../assets/06-asi-celebraremos.png';
+import galeria from '../assets/07-galeria.png';
+import elegancia from '../assets/08-elegancia.png';
+import regalo from '../assets/09-regalo.png';
+import confirmacion from '../assets/10-confirmacion.png';
+import teEsperamos from '../assets/11-te-esperamos.png';
+
+const title = 'Silvana y Martín | Invitación';
+const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24 de abril de 2027, Piura, Perú.';
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F4EFE5" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body>
+    <main class="invitacion">
+      <SobreAnimado />
+
+      <section id="portada" class="portada">
+        <Image
+          id="portada-img"
+          src={portada}
+          alt="Hay historias que están destinadas a encontrarse y amores que merecen celebrarse. Silvana y Martín. Te invitamos a ser parte del inicio de nuestra historia juntos."
+          widths={[480, 864]}
+          sizes="(max-width: 480px) 100vw, 480px"
+          loading="eager"
+          fetchpriority="high"
+          quality={90}
+        />
+        <a class="flecha" href="#fecha" aria-label="Ver el resto de la invitación">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 9l7 7 7-7" />
+          </svg>
+        </a>
+      </section>
+
+      <div class="resto">
+      <Section
+        id="fecha"
+        src={fechaFoto}
+        alt="Abril. Sábado 24, 2027. Piura, Perú. Fotografía de Silvana y Martín en la playa."
+        hotspots={[
+          { href: LINKS.guardarFecha, label: 'Guardar fecha', x: 122, y: 163, w: 206, h: 28, download: true },
+        ]}
+      />
+
+      <Section
+        src={nuestroSi}
+        alt="Nuestro sí. Con la bendición de Dios y de nuestros amados padres. Padres de la novia: José Alberto Pérez Farfán y Jessica Asalde Campos. Padres del novio: Carlos Rojas Balladares y Graciela Salazar Zevallos. Mejor son dos que uno… Porque si uno cae, el otro lo levantará. Eclesiastés 4, 9–10."
+      />
+
+      <div class="divisor" aria-hidden="true">
+        <span class="linea"></span><span class="rombo"></span><span class="linea"></span>
+      </div>
+
+      <Section
+        src={granDia}
+        alt="Nuestro gran día. Ceremonia religiosa 3:30 p. m., Capilla Asilo de Ancianos, Av. Jorge Chávez 350, Piura. Ceremonia civil 6:30 p. m., Asociación Caballos de Paso, Av. Los Ejidos km 5, La Mariposa, Piura."
+        hotspots={[
+          { href: LINKS.ceremoniaReligiosa, label: 'Cómo llegar a la ceremonia religiosa', x: 133, y: 346, w: 184, h: 28, external: true },
+          { href: LINKS.ceremoniaCivil, label: 'Cómo llegar a la ceremonia civil', x: 131, y: 617, w: 188, h: 31, external: true },
+        ]}
+      />
+
+      <Section
+        src={asiCelebraremos}
+        alt="Así celebraremos: 3:30 p. m. ceremonia religiosa; 6:30 p. m. ceremonia civil; 7:00 p. m. recepción; 9:00 p. m. inicio de fiesta; 4:00 a. m. fin de fiesta."
+      />
+
+      <Section src={galeria} alt="Galería de fotos de Silvana y Martín en la playa." />
+
+      <Section
+        src={elegancia}
+        alt="Un toque de elegancia. Código de vestimenta: elegante. Ellas: vestido largo. Ellos: terno y corbata. Reservamos el blanco y sus tonalidades para la novia. Te pedimos evitar también el rojo."
+      />
+
+      <Section
+        src={regalo}
+        alt="Un detalle con cariño. Tu compañía es nuestro mejor regalo. Si deseas tener un detalle con nosotros, aquí encontrarás nuestros datos. BCP Soles, Silvana Pérez Asalde."
+      />
+
+      <Section
+        src={confirmacion}
+        alt="¿Nos acompañas? Confirma tu asistencia. Nos vemos dentro de… Solo adultos: celebración reservada para adultos."
+        hotspots={[
+          { href: LINKS.confirmarAsistencia, label: 'Confirmar asistencia', x: 28, y: 246, w: 393, h: 51, external: LINKS.confirmarAsistencia.startsWith('http') },
+        ]}
+      />
+
+      <Section
+        src={teEsperamos}
+        alt="Te esperamos para celebrar juntos. Silvana y Martín corriendo de la mano en la orilla del mar."
+      />
+
+      <footer class="pie">
+        <span class="linea"></span>
+        <span class="monograma" aria-label="SM"><span class="s">S</span><span class="m">M</span></span>
+        <span class="linea"></span>
+      </footer>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --fondo: #f4efe5;
+    --dorado: #b4a17a;
+    --salvia: #929f8e;
+    --texto: #706558;
+    --papel-portada: #efe6d9;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    background: var(--fondo);
+  }
+</style>
+
+<style>
+  /* 1 punto del PDF = 100cqw / 450 */
+  .invitacion {
+    --pt: calc(100cqw / 450);
+    container-type: inline-size;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--fondo);
+    overflow: hidden;
+  }
+
+  /* Portada: la tarjeta que sale del sobre, a pantalla completa */
+  .flecha {
+    position: absolute;
+    left: 50%;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    width: 52px;
+    height: 52px;
+    margin-left: -26px;
+    display: grid;
+    place-items: center;
+    color: #8a947e; /* verde del sobre */
+    animation: saltar 1.6s ease-in-out infinite;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flecha svg {
+    width: 40px;
+    height: 40px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @keyframes saltar {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flecha {
+      animation: none;
+    }
+  }
+
+  .portada {
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    place-items: center;
+    background: var(--papel-portada);
+  }
+  .portada :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    /* bordes suaves para fundirse con el papel de fondo */
+    mask-image:
+      linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
+      linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+    mask-composite: intersect;
+  }
+
+  /* El resto de la invitación aparece cuando termina la animación del sobre */
+  .resto {
+    transition: opacity 0.9s ease 0.1s;
+  }
+  :global(html.sobre-bloqueado) .resto {
+    opacity: 0;
+  }
+
+  .divisor,
+  .pie {
+    position: relative;
+    background: var(--fondo);
+  }
+
+  /* Separador entre "Nuestro sí" y "Nuestro gran día" (120 pt) */
+  .divisor {
+    height: calc(120 * var(--pt));
+  }
+  .divisor .linea {
+    position: absolute;
+    top: calc(60 * var(--pt));
+    width: calc(90 * var(--pt));
+    border-top: calc(0.6 * var(--pt)) solid var(--dorado);
+    transform: translateY(-50%);
+  }
+  .divisor .linea:first-child {
+    left: calc(120 * var(--pt));
+  }
+  .divisor .linea:last-child {
+    left: calc(240 * var(--pt));
+  }
+  .divisor .rombo {
+    position: absolute;
+    left: calc(225 * var(--pt));
+    top: calc(60 * var(--pt));
+    width: calc(4.24 * var(--pt));
+    height: calc(4.24 * var(--pt));
+    background: var(--salvia);
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  /* Pie con monograma (90 pt) */
+  .pie {
+    height: calc(90 * var(--pt));
+  }
+  .pie .linea {
+    position: absolute;
+    top: calc(43 * var(--pt));
+    width: calc(43 * var(--pt));
+    border-top: calc(0.6 * var(--pt)) solid var(--dorado);
+  }
+  .pie .linea:first-child {
+    left: calc(143 * var(--pt));
+  }
+  .pie .linea:last-child {
+    left: calc(276 * var(--pt));
+  }
+  .monograma {
+    position: absolute;
+    inset: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: calc(37 * var(--pt));
+    line-height: 1;
+    color: var(--texto);
+  }
+  .monograma span {
+    position: absolute;
+  }
+  .monograma .s {
+    left: calc(207 * var(--pt));
+    top: calc(9 * var(--pt));
+  }
+  .monograma .m {
+    left: calc(226.5 * var(--pt));
+    top: calc(22.4 * var(--pt));
+  }
+</style>
