@@ -12,6 +12,7 @@ interface Hotspot {
   h: number;
   external?: boolean;
   download?: boolean;
+  latido?: boolean; // efecto heartbeat (por defecto activo)
 }
 
 interface Props {
@@ -47,11 +48,31 @@ const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(4)}%`;
         rel={h.external ? 'noopener' : undefined}
         download={h.download ? '' : undefined}
         style={`left:${pct(h.x, 450)};top:${pct(h.y, H)};width:${pct(h.w, 450)};height:${pct(h.h, H)}`}
-      />
+      >
+        {h.latido !== false && (
+          <span
+            class="latido"
+            aria-hidden="true"
+            style={`background-size:${((450 / h.w) * 100).toFixed(4)}% auto;background-position:${pct(h.x, 450 - h.w)} ${pct(h.y, H - h.h)}`}
+          />
+        )}
+      </a>
     ))
   }
   <slot />
 </section>
+
+<script>
+  // El botón que late es una copia del mismo recorte de la imagen de la sección:
+  // se usa la imagen que el navegador ya eligió (currentSrc), sin descargas extra.
+  document.querySelectorAll<HTMLElement>('.section').forEach((sec) => {
+    const img = sec.querySelector('img');
+    if (!img || !sec.querySelector('.latido')) return;
+    const usar = () => img.currentSrc && sec.style.setProperty('--img', `url("${img.currentSrc}")`);
+    if (img.complete) usar();
+    img.addEventListener('load', usar);
+  });
+</script>
 
 <style>
   .section {
@@ -72,6 +93,42 @@ const pct = (v: number, total: number) => `${((v / total) * 100).toFixed(4)}%`;
   .hotspot:hover,
   .hotspot:focus-visible {
     background-color: rgb(255 255 255 / 0.12);
+  }
+
+  .latido {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: var(--img);
+    background-repeat: no-repeat;
+    transform-origin: center;
+    animation: latido 2.4s ease-in-out infinite;
+    will-change: transform;
+  }
+  .hotspot:hover .latido,
+  .hotspot:focus-visible .latido {
+    filter: brightness(1.06);
+  }
+  @keyframes latido {
+    0%,
+    40%,
+    100% {
+      transform: scale(1);
+    }
+    10% {
+      transform: scale(1.045);
+    }
+    20% {
+      transform: scale(1.01);
+    }
+    28% {
+      transform: scale(1.035);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .latido {
+      animation: none;
+    }
   }
   .hotspot:focus-visible {
     outline: 2px solid #8a9a82;
