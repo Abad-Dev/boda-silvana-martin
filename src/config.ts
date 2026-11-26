@@ -21,5 +21,5 @@ export const GUEST_RSVP = {
   // En desarrollo apunta al GUEST local; se puede forzar con PUBLIC_GUEST_API_URL.
   baseUrl:
     import.meta.env.PUBLIC_GUEST_API_URL ??
-    (import.meta.env.DEV ? 'http://localhost:3000' : 'https://guest.pe'),
+    (import.meta.env.DEV ? 'http://localhost:3000' : 'https://guest-peru-demo.netlify.app'),
 };
