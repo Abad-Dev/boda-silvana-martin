@@ -1,7 +1,19 @@
 // Enlaces de los botones de la invitación. Edita aquí sin tocar el diseño.
 export const LINKS = {
-  // "GUARDAR FECHA" descarga un evento de calendario (public/boda-silvana-martin.ics)
-  guardarFecha: '/boda-silvana-martin.ics',
+  // "GUARDAR FECHA" abre Google Calendar con el evento listo para guardar
+  // (hora de Lima: 24/04/2027 15:30 – 25/04/2027 04:00)
+  guardarFecha:
+    'https://calendar.google.com/calendar/render?' +
+    new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'Boda de Silvana y Martín',
+      dates: '20270424T153000/20270425T040000',
+      ctz: 'America/Lima',
+      location: 'Capilla Asilo de Ancianos, Av. Jorge Chávez 350, Piura, Perú',
+      details:
+        'Ceremonia religiosa 3:30 p. m. — Capilla Asilo de Ancianos, Av. Jorge Chávez 350, Piura.\n' +
+        'Ceremonia civil 6:30 p. m. — Asociación Caballos de Paso, Av. Los Ejidos km 5, La Mariposa, Piura.',
+    }).toString(),
   // "CÓMO LLEGAR" – Ceremonia religiosa
   ceremoniaReligiosa:
     'https://www.google.com/maps/search/?api=1&query=' +
