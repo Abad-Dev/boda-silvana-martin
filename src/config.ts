@@ -19,9 +19,7 @@ export const LINKS = {
     'https://www.google.com/maps/search/?api=1&query=' +
     encodeURIComponent('Capilla Asilo de Ancianos, Av. Jorge Chávez 350, Piura, Perú'),
   // "CÓMO LLEGAR" – Ceremonia civil
-  ceremoniaCivil:
-    'https://www.google.com/maps/search/?api=1&query=' +
-    encodeURIComponent('Asociación Caballos de Paso, Av. Los Ejidos km 5, La Mariposa, Piura, Perú'),
+  ceremoniaCivil: 'https://maps.app.goo.gl/r6nmsWrZy9XWZfWW8',
   // "CONFIRMAR ASISTENCIA" abre el modal de confirmación (RsvpModal)
   confirmarAsistencia: '#confirmar',
 };
