@@ -33,7 +33,7 @@ import tParaCelebrar from '../assets/titulos/para-celebrar.png';
 const title = 'Silvana y Martín | Invitación';
 const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24 de abril de 2027, Piura, Perú.';
 
-// Vista previa al compartir el enlace (WhatsApp, Facebook, etc.): sin fotos de los novios
+// Vista previa al compartir el enlace (WhatsApp, Facebook, etc.): foto de los novios y sus nombres
 const ogTitle = 'Tienes una invitación';
 const ogDescription = 'Silvana y Martín';
 const absoluta = (ruta: string) => (Astro.site ? new URL(ruta, Astro.site).href : ruta);
@@ -63,7 +63,7 @@ const urlCanonica = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : 
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Sello de cera con las iniciales SM junto a los nombres Silvana y Martín" />
+    <meta property="og:image:alt" content="Martín besa a Silvana en la mejilla, en un marco de arco, junto a sus nombres" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={ogTitle} />
     <meta name="twitter:description" content={ogDescription} />
