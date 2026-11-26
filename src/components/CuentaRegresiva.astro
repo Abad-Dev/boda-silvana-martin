@@ -1,0 +1,90 @@
+---
+// Cuenta regresiva en vivo sobre la franja verde de "Nos vemos dentro de".
+// Las posiciones están en puntos del PDF, relativas a la sección 10-confirmacion (450 × 675).
+import '@fontsource/cormorant-garamond/600.css';
+
+interface Props {
+  fecha: string; // ISO con zona horaria, p. ej. 2027-04-24T15:30:00-05:00
+}
+const { fecha } = Astro.props;
+
+const campos = [
+  { key: 'dias', centro: 67.9 },
+  { key: 'horas', centro: 171.2 },
+  { key: 'minutos', centro: 273.3 },
+  { key: 'segundos', centro: 376.6 },
+];
+---
+
+<div class="cuenta" role="timer" data-fecha={fecha}>
+  {
+    campos.map((c) => (
+      <span class="num" data-campo={c.key} style={`left: calc(${c.centro} * var(--pt))`}>
+        00
+      </span>
+    ))
+  }
+</div>
+
+<script>
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  document.querySelectorAll<HTMLElement>('.cuenta').forEach((el) => {
+    const objetivo = new Date(el.dataset.fecha!).getTime();
+    const campos = Object.fromEntries(
+      [...el.querySelectorAll<HTMLElement>('[data-campo]')].map((n) => [n.dataset.campo!, n]),
+    );
+
+    const pintar = () => {
+      let s = Math.max(0, Math.floor((objetivo - Date.now()) / 1000));
+      const dias = Math.floor(s / 86400);
+      s -= dias * 86400;
+      const horas = Math.floor(s / 3600);
+      s -= horas * 3600;
+      const minutos = Math.floor(s / 60);
+      const segundos = s - minutos * 60;
+
+      campos.dias.textContent = pad(dias);
+      campos.dias.classList.toggle('tres', dias > 99);
+      campos.horas.textContent = pad(horas);
+      campos.minutos.textContent = pad(minutos);
+      campos.segundos.textContent = pad(segundos);
+      el.setAttribute('aria-label', `Faltan ${dias} días, ${horas} horas y ${minutos} minutos`);
+      return objetivo - Date.now() > 0;
+    };
+
+    if (pintar()) {
+      const id = setInterval(() => pintar() || clearInterval(id), 1000);
+    }
+  });
+</script>
+
+<style>
+  .cuenta {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    color: #fcf6e9;
+    line-height: 1;
+  }
+  .num {
+    position: absolute;
+    /* línea base de los dígitos en el diseño original */
+    top: calc(var(--top-num) * var(--pt));
+    font-size: calc(var(--tam-num) * var(--pt));
+    transform: translateX(-50%);
+    font-variant-numeric: lining-nums tabular-nums;
+    white-space: nowrap;
+  }
+  /* con 3 dígitos de días, se reduce para no chocar con los dos puntos */
+  .num.tres {
+    font-size: calc(var(--tam-num) * 0.8 * var(--pt));
+    top: calc((var(--top-num) + var(--tam-num) * 0.2 * 0.815) * var(--pt));
+  }
+  .cuenta {
+    --tam-num: 56;
+    --top-num: 398.6;
+  }
+</style>

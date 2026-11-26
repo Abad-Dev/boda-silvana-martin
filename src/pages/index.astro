@@ -4,6 +4,7 @@ import Section from '../components/Section.astro';
 import { LINKS } from '../config';
 
 import SobreAnimado from '../components/SobreAnimado.astro';
+import CuentaRegresiva from '../components/CuentaRegresiva.astro';
 import { Image } from 'astro:assets';
 import portada from '../assets/02-portada.png';
 import fechaFoto from '../assets/03-fecha-foto.png';
@@ -104,7 +105,9 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
         hotspots={[
           { href: LINKS.confirmarAsistencia, label: 'Confirmar asistencia', x: 28, y: 246, w: 393, h: 51, external: LINKS.confirmarAsistencia.startsWith('http') },
         ]}
-      />
+      >
+        <CuentaRegresiva fecha="2027-04-24T15:30:00-05:00" />
+      </Section>
 
       <Section
         src={teEsperamos}
