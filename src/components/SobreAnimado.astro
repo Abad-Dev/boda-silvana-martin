@@ -1,7 +1,7 @@
 ---
 import { getImage } from 'astro:assets';
 import fondo from '../assets/01-sobre.png';
-import tarjeta from '../assets/secciones/02-portada-limpia.png';
+import tarjeta from '../assets/secciones/02-portada-foto.png';
 import sello from '../assets/sello-marfil.png';
 
 const fondoImg = await getImage({ src: fondo, format: 'webp', quality: 90 });
@@ -17,9 +17,9 @@ const H = 829;
 const px = (x: number) => `${((x / W) * 100).toFixed(3)}%`;
 const py = (y: number) => `${((y / H) * 100).toFixed(3)}%`;
 
-// Tarjeta: la portada (02-portada.png, 864 × 967), la misma imagen que queda a pantalla completa
+// Tarjeta: la portada (02-portada-foto.png), la misma imagen que queda a pantalla completa
 const cardW = 350;
-const cardH = (cardW * 967) / 864;
+const cardH = (cardW * tarjeta.height) / tarjeta.width;
 const cardX = 239 - cardW / 2;
 const cardY = 305; // empieza escondida dentro del sobre
 

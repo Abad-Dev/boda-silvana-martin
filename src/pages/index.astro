@@ -8,7 +8,7 @@ import CuentaRegresiva from '../components/CuentaRegresiva.astro';
 import RsvpModal from '../components/RsvpModal.astro';
 import TituloManuscrito from '../components/TituloManuscrito.astro';
 import { Image } from 'astro:assets';
-import portada from '../assets/secciones/02-portada-limpia.png';
+import portada from '../assets/secciones/02-portada-foto.png';
 import fechaFoto from '../assets/secciones/03-fecha-foto.png';
 import nuestroSi from '../assets/secciones/04-nuestro-si-limpia.png';
 import granDia from '../assets/secciones/05-gran-dia.png';
@@ -77,7 +77,7 @@ const urlCanonica = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : 
         <Image
           id="portada-img"
           src={portada}
-          alt="Hay historias que están destinadas a encontrarse y amores que merecen celebrarse. Silvana y Martín. Te invitamos a ser parte del inicio de nuestra historia juntos."
+          alt="Hay historias que están destinadas a encontrarse y amores que merecen celebrarse. Fotografía de Martín besando a Silvana en la mejilla. Silvana y Martín. Te invitamos a ser parte del inicio de nuestra historia juntos."
           widths={[480, 864]}
           sizes="(max-width: 480px) 100vw, 480px"
           loading="eager"
