@@ -5,17 +5,29 @@ import { LINKS } from '../config';
 
 import SobreAnimado from '../components/SobreAnimado.astro';
 import CuentaRegresiva from '../components/CuentaRegresiva.astro';
+import TituloManuscrito from '../components/TituloManuscrito.astro';
 import { Image } from 'astro:assets';
-import portada from '../assets/02-portada.png';
-import fechaFoto from '../assets/03-fecha-foto.png';
-import nuestroSi from '../assets/04-nuestro-si.png';
-import granDia from '../assets/05-gran-dia.png';
-import asiCelebraremos from '../assets/06-asi-celebraremos.png';
-import galeria from '../assets/07-galeria.png';
-import elegancia from '../assets/08-elegancia.png';
-import regalo from '../assets/09-regalo.png';
-import confirmacion from '../assets/10-confirmacion.png';
-import teEsperamos from '../assets/11-te-esperamos.png';
+import portada from '../assets/secciones/02-portada-limpia.png';
+import fechaFoto from '../assets/secciones/03-fecha-foto.png';
+import nuestroSi from '../assets/secciones/04-nuestro-si.png';
+import granDia from '../assets/secciones/05-gran-dia.png';
+import asiCelebraremos from '../assets/secciones/06-asi-celebraremos.png';
+import galeria from '../assets/secciones/07-galeria.png';
+import elegancia from '../assets/secciones/08-elegancia.png';
+import regalo from '../assets/secciones/09-regalo.png';
+import confirmacion from '../assets/secciones/10-confirmacion.png';
+import teEsperamos from '../assets/secciones/11-te-esperamos.png';
+
+// Tinta de los títulos manuscritos (se escriben al entrar en pantalla)
+import tNuestroSi from '../assets/titulos/nuestro-si.png';
+import tGranDia from '../assets/titulos/gran-dia.png';
+import tAsiCelebraremos from '../assets/titulos/asi-celebraremos.png';
+import tElegancia from '../assets/titulos/elegancia.png';
+import tUnDetalle from '../assets/titulos/un-detalle.png';
+import tConCarino from '../assets/titulos/con-carino.png';
+import tNosAcompanas from '../assets/titulos/nos-acompanas.png';
+import tSoloAdultos from '../assets/titulos/solo-adultos.png';
+import tParaCelebrar from '../assets/titulos/para-celebrar.png';
 
 const title = 'Silvana y Martín | Invitación';
 const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24 de abril de 2027, Piura, Perú.';
@@ -67,7 +79,9 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
       <Section
         src={nuestroSi}
         alt="Nuestro sí. Con la bendición de Dios y de nuestros amados padres. Padres de la novia: José Alberto Pérez Farfán y Jessica Asalde Campos. Padres del novio: Carlos Rojas Balladares y Graciela Salazar Zevallos. Mejor son dos que uno… Porque si uno cae, el otro lo levantará. Eclesiastés 4, 9–10."
-      />
+      >
+        <TituloManuscrito src={tNuestroSi} x={145} y={100} base={nuestroSi} grupo="nuestro-si" />
+      </Section>
 
       <div class="divisor" aria-hidden="true">
         <span class="linea"></span><span class="rombo"></span><span class="linea"></span>
@@ -80,24 +94,33 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
           { href: LINKS.ceremoniaReligiosa, label: 'Cómo llegar a la ceremonia religiosa', x: 134, y: 346, w: 182.4, h: 28, external: true },
           { href: LINKS.ceremoniaCivil, label: 'Cómo llegar a la ceremonia civil', x: 131.8, y: 616.1, w: 186.3, h: 31.2, external: true },
         ]}
-      />
+      >
+        <TituloManuscrito src={tGranDia} x={135} y={60} base={granDia} grupo="gran-dia" />
+      </Section>
 
       <Section
         src={asiCelebraremos}
         alt="Así celebraremos: 3:30 p. m. ceremonia religiosa; 6:30 p. m. ceremonia civil; 7:00 p. m. recepción; 9:00 p. m. inicio de fiesta; 4:00 a. m. fin de fiesta."
-      />
+      >
+        <TituloManuscrito src={tAsiCelebraremos} x={95} y={88} base={asiCelebraremos} grupo="asi-celebraremos" />
+      </Section>
 
       <Section src={galeria} alt="Galería de fotos de Silvana y Martín en la playa." />
 
       <Section
         src={elegancia}
         alt="Un toque de elegancia. Código de vestimenta: elegante. Ellas: vestido largo. Ellos: terno y corbata. Reservamos el blanco y sus tonalidades para la novia. Te pedimos evitar también el rojo."
-      />
+      >
+        <TituloManuscrito src={tElegancia} x={112} y={318} base={elegancia} grupo="elegancia" />
+      </Section>
 
       <Section
         src={regalo}
         alt="Un detalle con cariño. Tu compañía es nuestro mejor regalo. Si deseas tener un detalle con nosotros, aquí encontrarás nuestros datos. BCP Soles, Silvana Pérez Asalde."
-      />
+      >
+        <TituloManuscrito src={tUnDetalle} x={195} y={191} base={regalo} grupo="regalo" />
+        <TituloManuscrito src={tConCarino} x={185} y={336} base={regalo} grupo="regalo" retraso={1.7} />
+      </Section>
 
       <Section
         src={confirmacion}
@@ -106,13 +129,17 @@ const description = 'Silvana y Martín te invitan a celebrar su boda. Sábado 24
           { href: LINKS.confirmarAsistencia, label: 'Confirmar asistencia', x: 28.1, y: 246.1, w: 392.9, h: 51.4, external: LINKS.confirmarAsistencia.startsWith('http') },
         ]}
       >
+        <TituloManuscrito src={tNosAcompanas} x={28} y={58} base={confirmacion} grupo="nos-acompanas" />
         <CuentaRegresiva fecha="2027-04-24T15:30:00-05:00" />
+        <TituloManuscrito src={tSoloAdultos} x={290} y={1298} base={confirmacion} grupo="solo-adultos" />
       </Section>
 
       <Section
         src={teEsperamos}
         alt="Te esperamos para celebrar juntos. Silvana y Martín corriendo de la mano en la orilla del mar."
-      />
+      >
+        <TituloManuscrito src={tParaCelebrar} x={148} y={182} base={teEsperamos} grupo="para-celebrar" />
+      </Section>
 
       <footer class="pie">
         <span class="linea"></span>

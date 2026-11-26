@@ -1,0 +1,125 @@
+---
+// Capa de tinta de un título manuscrito (PNG con transparencia extraído de la imagen original).
+// Se coloca exactamente sobre la imagen base (de la que se borró el título) y se "escribe"
+// de izquierda a derecha cuando entra en pantalla.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  /** Recuadro del título en píxeles de la imagen base */
+  x: number;
+  y: number;
+  /** Tamaño de la imagen base en píxeles */
+  base: { width: number; height: number };
+  /** Títulos de varias líneas comparten grupo y se escriben una tras otra */
+  grupo: string;
+  /** Segundos a esperar antes de empezar (para la 2.ª línea en adelante) */
+  retraso?: number;
+}
+
+const { src, x, y, base, grupo, retraso = 0 } = Astro.props;
+const pct = (v: number, t: number) => `${((v / t) * 100).toFixed(4)}%`;
+const frac = src.width / base.width;
+// Más ancho = más tiempo escribiendo
+const duracion = +(0.9 + 1.7 * frac).toFixed(2);
+---
+
+<script is:inline>
+  document.documentElement.classList.add('hw-js');
+</script>
+<div
+  class="hw"
+  data-grupo={grupo}
+  aria-hidden="true"
+  style={`left:${pct(x, base.width)};top:${pct(y, base.height)};width:${pct(src.width, base.width)};--dur:${duracion}s;--retraso:${retraso}s`}
+>
+  <Image src={src} alt="" widths={[Math.round(src.width / 2), src.width]} sizes={`calc(${frac.toFixed(4)} * min(100vw, 480px))`} />
+</div>
+
+<script>
+  const iniciar = () => {
+    const todos = [...document.querySelectorAll<HTMLElement>('.hw')];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) {
+      todos.forEach((el) => el.classList.add('escrito'));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entradas) => {
+        entradas.forEach((e) => {
+          if (!e.isIntersecting) return;
+          const g = (e.target as HTMLElement).dataset.grupo;
+          todos
+            .filter((el) => el.dataset.grupo === g)
+            .forEach((el) => {
+              io.unobserve(el);
+              // No empezar a escribir hasta que la capa de tinta esté cargada
+              const img = el.querySelector('img');
+              const escribir = () => el.classList.add('escribir');
+              if (!img || img.complete) escribir();
+              else {
+                img.loading = 'eager';
+                img.addEventListener('load', escribir, { once: true });
+                img.addEventListener('error', escribir, { once: true });
+              }
+            });
+        });
+      },
+      { threshold: 0.6, rootMargin: '0px 0px -8% 0px' },
+    );
+    todos.forEach((el) => io.observe(el));
+  };
+
+  // Mientras el sobre está cerrado no se escribe nada: se espera a que se abra
+  const html = document.documentElement;
+  if (html.classList.contains('sobre-bloqueado')) {
+    const mo = new MutationObserver(() => {
+      if (!html.classList.contains('sobre-bloqueado')) {
+        mo.disconnect();
+        iniciar();
+      }
+    });
+    mo.observe(html, { attributes: true, attributeFilter: ['class'] });
+  } else {
+    iniciar();
+  }
+</script>
+
+<style>
+  .hw {
+    position: absolute;
+    pointer-events: none;
+    line-height: 0;
+  }
+  .hw :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Pluma: una máscara inclinada (como la letra cursiva) que avanza de izquierda a derecha */
+  :global(html.hw-js) .hw {
+    -webkit-mask-image: linear-gradient(100deg, #000 46%, transparent 54%);
+    mask-image: linear-gradient(100deg, #000 46%, transparent 54%);
+    -webkit-mask-size: 300% 100%;
+    mask-size: 300% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  :global(html.hw-js) .hw.escribir {
+    animation: escribir-titulo var(--dur) cubic-bezier(0.37, 0.1, 0.63, 0.95) var(--retraso) forwards;
+  }
+  :global(html.hw-js) .hw.escrito {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+  @keyframes escribir-titulo {
+    to {
+      -webkit-mask-position: 0 0;
+      mask-position: 0 0;
+    }
+  }
+</style>
